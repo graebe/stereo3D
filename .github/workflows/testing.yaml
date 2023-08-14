@@ -12,8 +12,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt update && sudo apt install -y libopencv-dev
-        # Add other dependencies, such as Google Test
+        sudo apt update && sudo apt install -y libopencv-dev libgtest-dev
 
     - name: Create Build Directory
       run: mkdir build

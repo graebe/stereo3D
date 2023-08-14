@@ -24,4 +24,4 @@ jobs:
       run: cmake --build build
 
     - name: Run Tests
-      run: ./build/runTests
+      run: ./build/runTests.so

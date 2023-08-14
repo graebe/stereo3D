@@ -1,9 +1,9 @@
-name: C++ CI with Test Coverage
+name: C++ CI
 
 on: [push, pull_request]
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -12,14 +12,13 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt update
-        sudo apt install -y libopencv-dev libgtest-dev p7zip-full lcov g++ gcc
+        sudo apt update && sudo apt install -y libopencv-dev libgtest-dev lcov
 
     - name: Create Build Directory
       run: mkdir build
 
     - name: CMake Generate
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+      run: cmake -DCMAKE_BUILD_TYPE=Debug -S . -B build
 
     - name: Build Project
       run: cmake --build build
@@ -27,20 +26,23 @@ jobs:
     - name: Run Tests
       run: ./build/runTests.so
 
-    - name: Capture LCOV coverage report
+    - name: Capture LCOV coverage info
       run: |
         lcov --directory . --capture --output-file coverage.info
-        lcov --remove coverage.info '/usr/*' --output-file coverage.info # Exclude system libraries
+        lcov --remove coverage.info '/usr/*' --output-file coverage.info
         lcov --list coverage.info
 
-    - name: Upload coverage to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.TOKEN_GHPAGES }}
-        publish_dir: ./coverage_report
+    - name: Generate HTML coverage report
+      run: genhtml -o coverage_report coverage.info
 
     - name: Archive coverage report
       uses: actions/upload-artifact@v2
       with:
         name: coverage-report
-        path: coverage.info
+        path: coverage_report/
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./coverage_report

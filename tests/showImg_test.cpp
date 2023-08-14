@@ -2,7 +2,7 @@
 #include "../src/showImg.h"
 
 TEST(ShowImgTest, CanOpenValidImage) {
-    ASSERT_TRUE(ShowImg::canOpenImage("../res/img_test_1.jpg"));
+    ASSERT_TRUE(ShowImg::canOpenImage("./res/img_test_1.jpg"));
 }
 
 TEST(ShowImgTest, CannotOpenInvalidImage) {

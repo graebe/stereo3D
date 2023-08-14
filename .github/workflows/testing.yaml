@@ -1,0 +1,28 @@
+name: C++ CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt update && sudo apt install -y libopencv-dev
+        # Add other dependencies, such as Google Test
+
+    - name: Create Build Directory
+      run: mkdir build
+
+    - name: CMake Generate
+      run: cmake -S . -B build
+
+    - name: Build Project
+      run: cmake --build build
+
+    - name: Run Tests
+      run: ./build/runTests

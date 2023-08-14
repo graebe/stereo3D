@@ -38,7 +38,6 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./coverage_report
-        branch: gh-pages-cov
 
     - name: Archive coverage report
       uses: actions/upload-artifact@v2

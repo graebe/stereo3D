@@ -15,6 +15,13 @@ _deps
 # Binaries
 *.so
 
+# Images & Datasets
+datasets
+*.jpg
+*.png
+*.zip
+*.pfm
+
 # Prerequisites
 *.d
 

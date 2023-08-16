@@ -26,11 +26,12 @@ find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
 # Executables
-add_executable(HelloWorld src/main.cpp)
+add_executable(calibration.so src/calibration.cpp src/camera.cpp)
 add_executable(showImg.so src/showImg_main.cpp src/showImg.cpp)
 
 # Link libraries
 target_link_libraries(showImg.so ${OpenCV_LIBS})
+target_link_libraries(calibration.so ${OpenCV_LIBS} )
 
 # Testing
 add_executable(runTests.so tests/showImg_test.cpp src/showImg.cpp)

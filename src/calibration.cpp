@@ -105,17 +105,25 @@ void Calibrator::addCalibrationImages(std::vector<cv::Mat> images)
 }
 
 // Calibrator
-bool Calibrator::checkerboardCalibration(const std::vector<std::string> files, Camera &C)
+bool Calibrator::checkerboardCalibration(Camera &C)
 {
-    // Add Images
-    addCalibrationImages(files);
-
-    // Calibrate the camera
+    // Check number of images
+    if (calfiles_.size() < 2)
+    {
+        std::cout << "Need a minimum of two images for calibration, currently it is: " << calfiles_.size() << std::endl;
+        return false;
+    }
+    // Calibrate
     std::vector<cv::Mat> rvecs, tvecs;
     C.calibrationError = cv::calibrateCamera(calsets_.object_point_set, calsets_.image_point_set, C.imager.psize, C.K, C.D, rvecs, tvecs);
-
-    // Return
     return true;
+};
+
+bool Calibrator::checkerboardCalibration(std::vector<std::string> files, Camera &C)
+{
+    addCalibrationImages(files);
+    bool success = checkerboardCalibration(C);
+    return success;
 };
 
 void Calibrator::printSummary()

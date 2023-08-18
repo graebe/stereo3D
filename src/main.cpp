@@ -16,7 +16,8 @@ int main()
     std::vector<std::string> calibrationImages = {"img_test_01.jpg", "img_test_02.jpg", "img_test_03.jpg"};
 
     // Calibrate
-    C.checkerboardCalibration(calibrationImages, cam1);
+    C.addCalibrationImages(calibrationImages);
+    C.checkerboardCalibration(cam1);
 
     // Output the results
     C.printSummary();

@@ -1,6 +1,13 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 
+struct Imager
+{
+    float pw;
+    float ph;
+    cv::Size psize;
+};
+
 class Camera
 {
 private:
@@ -11,6 +18,7 @@ public:
     cv::Mat D;
     cv::Mat R;
     cv::Mat t;
+    Imager imager;
     float calibrationError;
 };
 

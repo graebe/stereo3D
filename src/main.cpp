@@ -1,10 +1,12 @@
 #include "camera.hpp"
 #include "calibration.hpp"
+#include <opencv2/opencv.hpp>
 
 int main()
 {
     // Create Camera
     Camera cam1 = Camera();
+    cam1.imager.psize = cv::Size(640, 480);
 
     // Create Calibrator
     CalibrationBoard B = CalibrationBoard(9, 6, 25.0);

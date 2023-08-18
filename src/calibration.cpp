@@ -43,7 +43,7 @@ bool Calibrator::findChessboardCorners(CalibrationPoints &calpoints, cv::Mat &im
     return pattern_found;
 }
 
-bool Calibrator::addCalibrationImage(std::string file)
+bool Calibrator::addCalibrationImage_(std::string file)
 {
     // Load Image
     cv::Mat image = loadColorImage(file);
@@ -58,8 +58,9 @@ bool Calibrator::addCalibrationImage(std::string file)
     bool pattern_found = findChessboardCorners(calpoints, image);
     if (pattern_found)
     {
-        calsets.object_point_set.push_back(calpoints.object_points);
-        calsets.image_point_set.push_back(calpoints.image_points);
+        calfiles_.emplace_back(file);
+        calsets_.object_point_set.emplace_back(calpoints.object_points);
+        calsets_.image_point_set.emplace_back(calpoints.image_points);
         return true;
     }
     else
@@ -71,26 +72,29 @@ bool Calibrator::addCalibrationImage(std::string file)
     return false;
 }
 
-// Calibration
-bool Calibrator::checkerboardCalibration(const std::vector<std::string> files, Camera &C)
+void Calibrator::addCalibrationImages(std::vector<std::string> files)
 {
-    // Load Image, Find Corners
-    std::vector<std::future<bool>> futures;
     for (int img_idx = 0; img_idx < files.size(); img_idx++)
     {
-        futures.emplace_back(std::async(std::launch::async, &Calibrator::addCalibrationImage, this, files[img_idx]));
+        futures_.emplace_back(std::async(std::launch::async, &Calibrator::addCalibrationImage_, this, files[img_idx]));
     }
 
-    std::vector<bool> pattern_found;
-    for (int i = 0; i < futures.size(); i++)
+    for (int i = 0; i < futures_.size(); i++)
     {
-        bool result = futures[i].get();
-        pattern_found.emplace_back(result);
+        bool result = futures_[i].get();
+        pattern_found_.emplace_back(result);
     }
+}
+
+// Calibrator
+bool Calibrator::checkerboardCalibration(const std::vector<std::string> files, Camera &C)
+{
+    // Add Images
+    addCalibrationImages(files);
 
     // Calibrate the camera
     std::vector<cv::Mat> rvecs, tvecs;
-    C.calibrationError = cv::calibrateCamera(calsets.object_point_set, calsets.image_point_set, cv::Size(640, 480), C.K, C.D, rvecs, tvecs);
+    C.calibrationError = cv::calibrateCamera(calsets_.object_point_set, calsets_.image_point_set, C.imager.psize, C.K, C.D, rvecs, tvecs);
 
     // Return
     return true;

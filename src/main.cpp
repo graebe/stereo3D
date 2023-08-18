@@ -19,6 +19,7 @@ int main()
     C.checkerboardCalibration(calibrationImages, cam1);
 
     // Output the results
+    C.printSummary();
     std::cout << "Camera Matrix: \n"
               << cam1.K << std::endl;
     std::cout << "Distortion Coefficients: \n"

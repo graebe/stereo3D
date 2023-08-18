@@ -34,8 +34,9 @@ public:
     Calibrator();
     Calibrator(CalibrationBoard board);
     bool checkerboardCalibration(const std::vector<std::string> files, Camera &C);
-    bool findChessboardCorners(CalibrationPoints &calpoints, cv::Mat &image);
     void addCalibrationImages(std::vector<std::string> files);
+    void addCalibrationImages(std::vector<cv::Mat> images);
+    void printSummary();
 
 private:
     CalibrationBoard board_;
@@ -43,6 +44,8 @@ private:
     CalibrationPointSet calsets_;
     std::vector<std::future<bool>> futures_;
     std::vector<bool> pattern_found_;
-    void fillCheckerBoardObjectPoints(CalibrationPoints &calpoints);
+    void fillCheckerBoardObjectPoints_(CalibrationPoints &calpoints);
+    bool findChessboardCorners_(CalibrationPoints &calpoints, cv::Mat &image);
     bool addCalibrationImage_(std::string file);
+    bool addCalibrationImage_(cv::Mat image);
 };

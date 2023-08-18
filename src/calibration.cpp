@@ -5,7 +5,7 @@ Calibrator::Calibrator(){};
 Calibrator::Calibrator(CalibrationBoard board) : board_(board){};
 
 // Helper Functions
-void Calibrator::fillCheckerBoardObjectPoints(CalibrationPoints &calpoints)
+void Calibrator::fillCheckerBoardObjectPoints_(CalibrationPoints &calpoints)
 {
     calpoints.image_points.clear();
     calpoints.object_points.clear();
@@ -30,7 +30,7 @@ void drawChessboardCorners(cv::Mat image, CalibrationBoard board, std::vector<cv
     cv::imwrite(filename, image);
 }
 
-bool Calibrator::findChessboardCorners(CalibrationPoints &calpoints, cv::Mat &image)
+bool Calibrator::findChessboardCorners_(CalibrationPoints &calpoints, cv::Mat &image)
 {
     bool pattern_found = cv::findChessboardCorners(image, board_.boardSize, calpoints.image_points);
     if (pattern_found)
@@ -52,31 +52,49 @@ bool Calibrator::addCalibrationImage_(std::string file)
         return false;
     }
 
-    // Find Corners
+    bool success = addCalibrationImage_(image);
+
+    // Return
+    return success;
+}
+
+bool Calibrator::addCalibrationImage_(cv::Mat image)
+{
     CalibrationPoints calpoints;
-    fillCheckerBoardObjectPoints(calpoints);
-    bool pattern_found = findChessboardCorners(calpoints, image);
+    fillCheckerBoardObjectPoints_(calpoints);
+    bool pattern_found = findChessboardCorners_(calpoints, image);
     if (pattern_found)
     {
-        calfiles_.emplace_back(file);
         calsets_.object_point_set.emplace_back(calpoints.object_points);
         calsets_.image_point_set.emplace_back(calpoints.image_points);
         return true;
     }
-    else
-    {
-        std::cerr << "Checkerboard not found in the image: " << file << std::endl;
-    }
-
-    // Return
     return false;
 }
 
 void Calibrator::addCalibrationImages(std::vector<std::string> files)
 {
-    for (int img_idx = 0; img_idx < files.size(); img_idx++)
+    for (std::string file : files)
     {
-        futures_.emplace_back(std::async(std::launch::async, &Calibrator::addCalibrationImage_, this, files[img_idx]));
+        calfiles_.emplace_back(file);
+        futures_.emplace_back(std::async(std::launch::async, [this, &file]()
+                                         { return this->addCalibrationImage_(file); }));
+    }
+
+    for (int i = 0; i < futures_.size(); i++)
+    {
+        bool result = futures_[i].get();
+        pattern_found_.emplace_back(result);
+    }
+}
+
+void Calibrator::addCalibrationImages(std::vector<cv::Mat> images)
+{
+    for (cv::Mat image : images)
+    {
+        calfiles_.emplace_back("inmemory image");
+        futures_.emplace_back(std::async(std::launch::async, [this, &image]()
+                                         { return this->addCalibrationImage_(image); }));
     }
 
     for (int i = 0; i < futures_.size(); i++)
@@ -99,3 +117,16 @@ bool Calibrator::checkerboardCalibration(const std::vector<std::string> files, C
     // Return
     return true;
 };
+
+void Calibrator::printSummary()
+{
+    std::cout << "Calibration Summary" << std::endl;
+    std::cout << "-------------------" << std::endl;
+    for (int i = 0; i < calfiles_.size(); i++)
+    {
+        std::cout << "|-Image: " << calfiles_[i] << std::endl;
+        std::cout << "| Pattern Found: " << pattern_found_[i] << std::endl;
+        // std::cout << "| Coordinates: " << calsets_.image_point_set[i] << std::endl;
+        std::cout << "|" << std::endl;
+    }
+}

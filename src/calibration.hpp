@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 #include <opencv2/opencv.hpp>
+#include <thread>
+#include <future>
 #include "camera.hpp"
 
 struct CalibrationBoard

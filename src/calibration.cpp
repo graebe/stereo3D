@@ -1,5 +1,4 @@
 #include "calibration.hpp"
-#include <stdio.h>
 
 // Constructors
 Calibrator::Calibrator(){};
@@ -75,22 +74,21 @@ bool Calibrator::addCalibrationImage(std::string file)
 // Calibration
 bool Calibrator::checkerboardCalibration(const std::vector<std::string> files, Camera &C)
 {
-    // temporary object and corner points
-    CalibrationPoints calpoints;
-    fillCheckerBoardObjectPoints(calpoints);
-
     // Load Image, Find Corners
+    std::vector<std::future<bool>> futures;
     for (int img_idx = 0; img_idx < files.size(); img_idx++)
     {
-        bool pattern_found = addCalibrationImage(files[img_idx]);
-        if (~pattern_found)
-        {
-            continue;
-        }
+        futures.emplace_back(std::async(std::launch::async, &Calibrator::addCalibrationImage, this, files[img_idx]));
+    }
+
+    std::vector<bool> pattern_found;
+    for (int i = 0; i < futures.size(); i++)
+    {
+        bool result = futures[i].get();
+        pattern_found.emplace_back(result);
     }
 
     // Calibrate the camera
-    cv::Mat K, D;
     std::vector<cv::Mat> rvecs, tvecs;
     C.calibrationError = cv::calibrateCamera(calsets.object_point_set, calsets.image_point_set, cv::Size(640, 480), C.K, C.D, rvecs, tvecs);
 

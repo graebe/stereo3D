@@ -9,6 +9,8 @@ public:
     Camera(cv::Mat K, cv::Mat D);
     cv::Mat K;
     cv::Mat D;
+    cv::Mat R;
+    cv::Mat t;
     float calibrationError;
 };
 

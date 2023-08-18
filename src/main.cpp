@@ -18,9 +18,9 @@ int main()
 
     // Output the results
     std::cout << "Camera Matrix: \n"
-              << cam1.getK() << std::endl;
+              << cam1.K << std::endl;
     std::cout << "Distortion Coefficients: \n"
-              << cam1.getD() << std::endl;
+              << cam1.D << std::endl;
     std::cout << "success." << std::endl;
 
     return 0;

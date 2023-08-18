@@ -14,19 +14,29 @@ struct CalibrationBoard
     float sqSize;
 };
 
+struct CalibrationPoints
+{
+    std::vector<cv::Point3f> object_points;
+    std::vector<cv::Point2f> image_points;
+};
+
+struct CalibrationPointSet
+{
+    std::vector<std::vector<cv::Point3f>> object_point_set;
+    std::vector<std::vector<cv::Point2f>> image_point_set;
+};
+
 class Calibrator
 {
 public:
     Calibrator();
     Calibrator(CalibrationBoard board);
     bool checkerboardCalibration(const std::vector<std::string> files, Camera &C);
+    bool findChessboardCorners(CalibrationPoints &calpoints, cv::Mat &image);
+    bool addCalibrationImage(std::string file);
 
 private:
     CalibrationBoard board_;
-    std::vector<std::vector<cv::Point3f>> object_points;
-    std::vector<std::vector<cv::Point2f>> image_points;
-    std::vector<cv::Point3f> obj_;
-    std::vector<cv::Point2f> corners_;
-
-    void initObjPoints();
+    CalibrationPointSet calsets;
+    void fillCheckerBoardObjectPoints(CalibrationPoints &calset);
 };

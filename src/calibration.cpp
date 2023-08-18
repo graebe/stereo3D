@@ -6,12 +6,13 @@ Calibrator::Calibrator(){};
 Calibrator::Calibrator(CalibrationBoard board) : board_(board){};
 
 // Helper Functions
-void Calibrator::initObjPoints()
+void Calibrator::fillCheckerBoardObjectPoints(CalibrationPoints &calpoints)
 {
-    obj_.clear();
+    calpoints.image_points.clear();
+    calpoints.object_points.clear();
     for (int i = 0; i < board_.boardSize.height; i++)
         for (int j = 0; j < board_.boardSize.width; j++)
-            obj_.push_back(cv::Point3f(j * board_.sqSize, i * board_.sqSize, 0.0f));
+            calpoints.object_points.push_back(cv::Point3f(j * board_.sqSize, i * board_.sqSize, 0.0f));
 }
 
 cv::Mat loadColorImage(std::string path)
@@ -30,55 +31,68 @@ void drawChessboardCorners(cv::Mat image, CalibrationBoard board, std::vector<cv
     cv::imwrite(filename, image);
 }
 
-// Calibration
-bool Calibrator::checkerboardCalibration(const std::vector<std::string> files, Camera &C)
+bool Calibrator::findChessboardCorners(CalibrationPoints &calpoints, cv::Mat &image)
 {
-    initObjPoints();
-    for (int img_idx = 0; img_idx < files.size(); img_idx++)
+    bool pattern_found = cv::findChessboardCorners(image, board_.boardSize, calpoints.image_points);
+    if (pattern_found)
     {
-        // Load the image in color mode
-        cv::Mat image = loadColorImage(files[img_idx]);
-        if (image.empty())
-        {
-            continue;
-        }
-
-        // Find Corners
-        bool pattern_found = cv::findChessboardCorners(image, board_.boardSize, corners_);
-
-        // Search Corners
-        if (pattern_found)
-        {
-            object_points.push_back(obj_);
-            cv::Mat gray_image;
-            cv::cvtColor(image, gray_image, cv::COLOR_BGR2GRAY);
-            cv::cornerSubPix(gray_image, corners_, cv::Size(11, 11), cv::Size(-1, -1),
-                             cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1));
-            image_points.push_back(corners_);
-            // draw
-            // std::string output_filename = "output_image_0" + std::to_string(img_idx) + ".jpg";
-        }
-        else
-        {
-            std::cerr << "Checkerboard not found in the image: " << files[img_idx] << std::endl;
-        }
+        cv::Mat gray_image;
+        cv::cvtColor(image, gray_image, cv::COLOR_BGR2GRAY);
+        cv::cornerSubPix(gray_image, calpoints.image_points, cv::Size(11, 11), cv::Size(-1, -1),
+                         cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1));
     }
-    if (object_points.size() < 2 || image_points.size() < 2)
+    return pattern_found;
+}
+
+bool Calibrator::addCalibrationImage(std::string file)
+{
+    // Load Image
+    cv::Mat image = loadColorImage(file);
+    if (image.empty())
     {
-        std::cerr << "Insufficient valid images for calibration." << std::endl;
         return false;
     }
 
-    cv::Mat K, D;
-    std::vector<cv::Mat> rvecs, tvecs;
+    // Find Corners
+    CalibrationPoints calpoints;
+    fillCheckerBoardObjectPoints(calpoints);
+    bool pattern_found = findChessboardCorners(calpoints, image);
+    if (pattern_found)
+    {
+        calsets.object_point_set.push_back(calpoints.object_points);
+        calsets.image_point_set.push_back(calpoints.image_points);
+        return true;
+    }
+    else
+    {
+        std::cerr << "Checkerboard not found in the image: " << file << std::endl;
+    }
+
+    // Return
+    return false;
+}
+
+// Calibration
+bool Calibrator::checkerboardCalibration(const std::vector<std::string> files, Camera &C)
+{
+    // temporary object and corner points
+    CalibrationPoints calpoints;
+    fillCheckerBoardObjectPoints(calpoints);
+
+    // Load Image, Find Corners
+    for (int img_idx = 0; img_idx < files.size(); img_idx++)
+    {
+        bool pattern_found = addCalibrationImage(files[img_idx]);
+        if (~pattern_found)
+        {
+            continue;
+        }
+    }
 
     // Calibrate the camera
-    double error = cv::calibrateCamera(object_points, image_points, cv::Size(640, 480), K, D, rvecs, tvecs);
-
-    // Set Camera Intrinsics
-    C.setK(K);
-    C.setD(D);
-    C.setCalibrationError(error);
+    cv::Mat K, D;
+    std::vector<cv::Mat> rvecs, tvecs;
+    C.calibrationError = cv::calibrateCamera(calsets.object_point_set, calsets.image_point_set, cv::Size(640, 480), C.K, C.D, rvecs, tvecs);
 
     // Return
     return true;

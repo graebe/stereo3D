@@ -39,9 +39,9 @@ add_executable(showImg.bin src/showImg_main.cpp src/showImg.cpp)
 add_executable(capture.bin src/capture.cpp)
 
 # Link libraries
-target_link_libraries(showImg.so ${OpenCV_LIBS})
-target_link_libraries(calibration.so ${OpenCV_LIBS} Threads::Threads)
-target_link_libraries(capture.so ${OpenCV_LIBS})
+target_link_libraries(showImg.bin ${OpenCV_LIBS})
+target_link_libraries(calibration.bin ${OpenCV_LIBS} Threads::Threads)
+target_link_libraries(capture.bin ${OpenCV_LIBS})
 
 # Testing
 add_executable(runTests.bin tests/showImg_test.cpp src/showImg.cpp)

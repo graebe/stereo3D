@@ -25,6 +25,9 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
+# Threads
+find_package(Threads REQUIRED)
+
 # Executables
 add_executable(calibration.so src/main.cpp src/calibration.cpp src/camera.cpp)
 add_executable(showImg.so src/showImg_main.cpp src/showImg.cpp)
@@ -32,7 +35,7 @@ add_executable(capture.so src/capture.cpp)
 
 # Link libraries
 target_link_libraries(showImg.so ${OpenCV_LIBS})
-target_link_libraries(calibration.so ${OpenCV_LIBS})
+target_link_libraries(calibration.so ${OpenCV_LIBS} Threads::Threads)
 target_link_libraries(capture.so ${OpenCV_LIBS})
 
 # Testing

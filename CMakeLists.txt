@@ -5,6 +5,11 @@ cmake_minimum_required(VERSION 3.10)
 project(stereo3D)
 set(CMAKE_CXX_STANDARD 17)
 
+# Set the version
+set(VERSION_MAJOR 0)
+set(VERSION_MINOR 0)
+set(VERSION_PATCH 1)
+
 # Enable code coverage for GNU compiler in Debug mode
 if(CMAKE_BUILD_TYPE MATCHES Debug AND CMAKE_COMPILER_IS_GNUCXX)
     include(ProcessorCount)
@@ -29,9 +34,9 @@ include_directories(${GTEST_INCLUDE_DIRS})
 find_package(Threads REQUIRED)
 
 # Executables
-add_executable(calibration.so src/main.cpp src/calibration.cpp src/camera.cpp)
-add_executable(showImg.so src/showImg_main.cpp src/showImg.cpp)
-add_executable(capture.so src/capture.cpp)
+add_executable(calibration.bin src/main.cpp src/calibration.cpp src/camera.cpp)
+add_executable(showImg.bin src/showImg_main.cpp src/showImg.cpp)
+add_executable(capture.bin src/capture.cpp)
 
 # Link libraries
 target_link_libraries(showImg.so ${OpenCV_LIBS})
@@ -39,7 +44,7 @@ target_link_libraries(calibration.so ${OpenCV_LIBS} Threads::Threads)
 target_link_libraries(capture.so ${OpenCV_LIBS})
 
 # Testing
-add_executable(runTests.so tests/showImg_test.cpp src/showImg.cpp)
+add_executable(runTests.bin tests/showImg_test.cpp src/showImg.cpp)
 
 # Link testing libraries
-target_link_libraries(runTests.so ${OpenCV_LIBS} ${GTEST_LIBRARIES} pthread)
+target_link_libraries(runTests.bin ${OpenCV_LIBS} ${GTEST_LIBRARIES} pthread)

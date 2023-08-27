@@ -5,7 +5,7 @@
             "name": "Run Tests",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/runTests.so",
+            "program": "${workspaceFolder}/build/runTests.bin",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

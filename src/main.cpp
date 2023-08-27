@@ -27,5 +27,11 @@ int main()
               << cam1.D << std::endl;
     std::cout << "success." << std::endl;
 
+    std::cout << "\nInitializing Caputre" << std::endl;
+    cam1.initCapture();
+    cam1.capture();
+    cv::Mat img = cam1.getImage();
+    // std::cout << img << std::endl;
+    cam1.saveImage("caap1.jpg");
     return 0;
 }

@@ -28,10 +28,14 @@ int main()
     std::cout << "success." << std::endl;
 
     std::cout << "\nInitializing Caputre" << std::endl;
-    cam1.initCapture(5);
+    cam1.startCapture(5);
     cam1.capture();
+    Camera cam2 = Camera();
     cv::Mat img = cam1.getImage();
-    // std::cout << img << std::endl;
     cam1.saveImage("caap1.jpg");
+    cam2 = std::move(cam1);
+    std::cout << cam1.getImage() << std::endl;
+    cam2.saveImage("caap2.jpg");
+    cam1.saveImage("caap1_moved.jpg");
     return 0;
 }

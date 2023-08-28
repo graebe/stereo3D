@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 # Project Details
 project(stereo3D)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set the version
 set(VERSION_MAJOR 0)
@@ -42,7 +43,7 @@ target_link_libraries(showImg.bin ${OpenCV_LIBS})
 target_link_libraries(calibration.bin ${OpenCV_LIBS} Threads::Threads)
 
 # Testing
-add_executable(runTests.bin tests/showImg_test.cpp src/showImg.cpp)
+add_executable(runTests.bin tests/main_tests.cpp tests/camera_test.cpp tests/showImg_test.cpp src/showImg.cpp src/camera.cpp)
 
 # Link testing libraries
 target_link_libraries(runTests.bin ${OpenCV_LIBS} ${GTEST_LIBRARIES} pthread)

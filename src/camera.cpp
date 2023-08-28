@@ -62,7 +62,6 @@ Camera::~Camera() { Camera::releaseCapture(); };
 // Methods
 int Camera::startCapture(int warmUpFrames)
 {
-    std::cout << "Capturing photo with Camera..." << std::endl;
     capt_ = cv::VideoCapture(0); //("nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink", cv::CAP_GSTREAMER);
     if (!capt_.isOpened())
     {

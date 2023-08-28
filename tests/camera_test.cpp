@@ -1,6 +1,17 @@
 #include <gtest/gtest.h>
 #include <filesystem>
+#include <cstdlib> // for std::getenv
 #include "../src/camera.hpp"
+
+bool isCIEnvironment()
+{
+    const char *env_val = std::getenv("CI_ENVIRONMENT");
+    if (env_val && std::string(env_val) == "github-actions")
+    {
+        return true;
+    }
+    return false;
+}
 
 TEST(CameraTest, DefaultConstructor)
 {
@@ -21,6 +32,10 @@ TEST(CameraTest, ParametrizedConstructor)
 
 TEST(CameraTest, MoveAssignment)
 {
+    if (isCIEnvironment())
+    {
+        GTEST_SKIP(); // Skip the test in CI environment
+    }
     // Test data
     cv::Mat K = (cv::Mat_<double>(3, 3) << 1, 0, 0, 0, 1, 0, 0, 0, 1);
     cv::Mat D = cv::Mat::zeros(1, 5, CV_64F);
@@ -58,6 +73,10 @@ TEST(CameraTest, MoveAssignment)
 
 TEST(CameraTet, MoveAssignment)
 {
+    if (isCIEnvironment())
+    {
+        GTEST_SKIP(); // Skip the test in CI environment
+    }
     Camera cam1;
     cam1.startCapture(3);
     Camera cam2;
@@ -70,6 +89,10 @@ TEST(CameraTet, MoveAssignment)
 
 TEST(CameraTest, CheckCaptureImageNotEmpty)
 {
+    if (isCIEnvironment())
+    {
+        GTEST_SKIP(); // Skip the test in CI environment
+    }
     Camera cam;
     cam.startCapture(1);
     cam.capture();
@@ -80,6 +103,10 @@ TEST(CameraTest, CheckCaptureImageNotEmpty)
 
 TEST(CameraTest, SaveImage)
 {
+    if (isCIEnvironment())
+    {
+        GTEST_SKIP(); // Skip the test in CI environment
+    }
     Camera cam;
     cam.startCapture(1);
     cam.capture();

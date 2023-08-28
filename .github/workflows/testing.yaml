@@ -27,7 +27,7 @@ jobs:
       run: cmake --build build
 
     - name: Run Tests
-      run: ./build/runTests.so
+      run: ./build/runTests.bin
 
     - name: Capture LCOV coverage info
       run: |

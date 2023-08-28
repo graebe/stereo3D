@@ -28,7 +28,7 @@ int main()
     std::cout << "success." << std::endl;
 
     std::cout << "\nInitializing Caputre" << std::endl;
-    cam1.initCapture();
+    cam1.initCapture(5);
     cam1.capture();
     cv::Mat img = cam1.getImage();
     // std::cout << img << std::endl;

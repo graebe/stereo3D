@@ -1,6 +1,8 @@
 #include "camera.hpp"
 #include "calibration.hpp"
 #include <opencv2/opencv.hpp>
+#include <ncurses.h>
+#include <chrono>
 
 int main()
 {
@@ -30,33 +32,61 @@ int main()
     // Camera 1
     std::cout << "\nInitializing Caputre Camera 1" << std::endl;
     cam1.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
-    cam1.startCapture(5);
-    cam1.capture();
-    cam1.releaseCapture();
-    cam1.saveImage("cap1.jpg");
-    cv::Mat img1 = cam1.getImage();
 
     // Camera 2
     std::cout << "\nInitializing Caputre Camera 2" << std::endl;
     Camera cam2 = Camera();
     cam2.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=1 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
-    cam2.startCapture(5);
-    cam2.capture();
-    cam2.releaseCapture();
-    cam2.saveImage("cap2.jpg");
-    cv::Mat img2 = cam2.getImage();
 
     // Multi Cameras
+    std::cout << "Initializing Multi Camera" << std::endl;
     MultiCamera cams = MultiCamera();
-    cams.addCamera(std::move(cam1));
-    cams.addCamera(std::move(cam2));
+    // cams.addCamera(std::move(cam1));
+    // cams.addCamera(std::move(cam2));
+
+    // Capture Image When Space Is Pressed
     std::cout << "Starting Multi Camera Capture ..." << std::endl;
-    cams.startCapture(5);
-    std::cout << "Capturing Multi Camera ..." << std::endl;
-    cams.capture();
+    cam1.startCapture(5);
+    initscr();
+    cbreak();
+    noecho();
+    keypad(stdscr, TRUE);
+    timeout(-1);
+
+    // cam1.capture();
+    // cam1.saveImage("Calibration_start.jpg");
+    // std::cout << "Show second finger" << std::endl;
+    // std::this_thread::sleep_for(std::chrono::seconds(1));
+    // cam1.capture();
+    // cam1.saveImage("Calibration_start_second.jpg");
+    int ch;
+    std::string filename = "calibration_img.jpg";
+    // std::string currFilename = filename;
+    size_t pos = filename.find(".");
+    
+    int i = 0;
+    while (true) {
+	i++;
+        ch = getch();
+	// currFilename = filename;
+	// if (pos != std::string::npos) {
+        //     currFilename.replace(pos, 1, std::to_string(i));
+	// }
+	//std::this_thread::sleep_for(std::chrono::seconds(1));
+        if (ch == ' ') {
+	    std::cout << "Capturing Frame." << std::endl;
+	    cam1.capture();
+            cam1.saveImage("calibration_img_" + std::to_string(i) + ".jpg");
+	    // std::this_thread::sleep_for(std::chrono::seconds(1));
+	    // break;
+	}
+        if (ch == 'q') {
+	    std::cout << "Quitting" << std::endl;
+	    break;
+	}	
+    } 
+    endwin();
     cams.releaseCapture();
-    std::cout << "Saving Images ..." << std::endl;
-    cams.saveImages("captmulti.jpg");
 
     return 0;
 }

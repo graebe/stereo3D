@@ -3,6 +3,35 @@
 #include <opencv2/opencv.hpp>
 #include <ncurses.h>
 #include <chrono>
+#include <thread>
+#include <condition_variable>
+#include <mutex>
+#include <atomic>
+
+std::atomic<bool> run(true);
+cv::Mat imgShared;
+std::mutex imgMutex;
+std::condition_variable imgAvail;
+
+void display()
+{
+    while (run)
+    {
+        cv::Mat imgShow;
+        {
+            std::unique_lock<std::mutex> lock(imgMutex);
+            imgAvail.wait(lock, []
+                          { return !imgShared.empty(); });
+            if (imgShared.empty())
+            {
+                continue;
+            }
+            imgShow = imgShared.clone();
+            imgShared.release();
+        }
+        cv::imshow("Camera Stream", imgShow);
+    }
+}
 
 int main()
 {
@@ -31,62 +60,62 @@ int main()
 
     // Camera 1
     std::cout << "\nInitializing Caputre Camera 1" << std::endl;
-    cam1.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
+    // cam1.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
+    cam1.setCaptureDefinition(std::string("0"));
 
     // Camera 2
     std::cout << "\nInitializing Caputre Camera 2" << std::endl;
     Camera cam2 = Camera();
-    cam2.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=1 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
+    cam2.setCaptureDefinition(std::string("0"));
+    // cam2.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=1 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
 
     // Multi Cameras
     std::cout << "Initializing Multi Camera" << std::endl;
     MultiCamera cams = MultiCamera();
-    // cams.addCamera(std::move(cam1));
-    // cams.addCamera(std::move(cam2));
+    cams.addCamera(std::move(cam1));
+    cams.addCamera(std::move(cam2));
 
     // Capture Image When Space Is Pressed
     std::cout << "Starting Multi Camera Capture ..." << std::endl;
-    cam1.startCapture(5);
+    cams.startCapture(5);
     initscr();
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
     timeout(-1);
 
-    // cam1.capture();
-    // cam1.saveImage("Calibration_start.jpg");
-    // std::cout << "Show second finger" << std::endl;
-    // std::this_thread::sleep_for(std::chrono::seconds(1));
-    // cam1.capture();
-    // cam1.saveImage("Calibration_start_second.jpg");
     int ch;
     std::string filename = "calibration_img.jpg";
-    // std::string currFilename = filename;
     size_t pos = filename.find(".");
-    
+
+    std::thread dispThread(display);
+
     int i = 0;
-    while (true) {
-	i++;
+    while (true)
+    {
+        i++;
         ch = getch();
-	// currFilename = filename;
-	// if (pos != std::string::npos) {
-        //     currFilename.replace(pos, 1, std::to_string(i));
-	// }
-	//std::this_thread::sleep_for(std::chrono::seconds(1));
-        if (ch == ' ') {
-	    std::cout << "Capturing Frame." << std::endl;
-	    cam1.capture();
-            cam1.saveImage("calibration_img_" + std::to_string(i) + ".jpg");
-	    // std::this_thread::sleep_for(std::chrono::seconds(1));
-	    // break;
-	}
-        if (ch == 'q') {
-	    std::cout << "Quitting" << std::endl;
-	    break;
-	}	
-    } 
+        if (ch == ' ')
+        {
+            std::cout << "Capturing Frame." << std::endl;
+            cams.capture();
+            {
+                std::lock_guard<std::mutex> lock(imgMutex);
+                imgShared = std::move(cams.getImage(0));
+                imgAvail.notify_one();
+            }
+            cams.saveImages("calibration_img_" + std::to_string(i) + "_.jpg");
+        }
+        if (ch == 'q')
+        {
+            std::cout << "Quitting" << std::endl;
+            break;
+        }
+    }
     endwin();
     cams.releaseCapture();
+
+    dispThread.join();
 
     return 0;
 }

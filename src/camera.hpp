@@ -7,18 +7,21 @@ private:
     void moveProperties_(CameraInterface &source);
 
 protected:
-    cv::Mat img;
+    std::unique_ptr<cv::Mat> img;
     cv::VideoCapture capt_;
     bool isCapturing_{false};
 
 public:
-    CameraInterface(){};
+    // Constructor
+    CameraInterface();
     // Disallow Copy Construction
     CameraInterface(const CameraInterface &) = delete;
     CameraInterface &operator=(const CameraInterface &) = delete;
     //  Move Construction
     CameraInterface(CameraInterface &&source) noexcept;
     CameraInterface &operator=(CameraInterface &&source) noexcept;
+    // Destructor
+    ~CameraInterface();
     //  Methods
     virtual int startCapture(int warmUpFrames) = 0;
     virtual int capture() = 0;
@@ -47,6 +50,7 @@ public:
     Camera(Camera &&source) noexcept;
     // Copy Assignment Operator (deleted in interface)
     Camera &operator=(Camera &&source) noexcept;
+    // Destructor
     ~Camera();
     // Properties
     cv::Mat K;
@@ -63,14 +67,17 @@ public:
     void releaseCapture() override;
 };
 
-class StereoCamera
+class MultiCamera
 {
 private:
-    Camera C1;
-    Camera C2;
+    std::vector<Camera> _cams;
 
 public:
-    StereoCamera(){};
+    // Constructors
+    MultiCamera();
+    MultiCamera(std::vector<Camera> cams);
+    // Methods
+    void addCamera(Camera &&cam);
     void startCapture();
     void capture();
 };

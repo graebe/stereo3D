@@ -33,9 +33,10 @@ int main()
     Camera cam2 = Camera();
     cv::Mat img = cam1.getImage();
     cam1.saveImage("caap1.jpg");
-    cam2 = std::move(cam1);
-    std::cout << cam1.getImage() << std::endl;
-    cam2.saveImage("caap2.jpg");
-    cam1.saveImage("caap1_moved.jpg");
+
+    // Multi Cameras
+    MultiCamera cams = MultiCamera();
+    cams.addCamera(std::move(cam1));
+    cams.addCamera(std::move(cam2));
     return 0;
 }

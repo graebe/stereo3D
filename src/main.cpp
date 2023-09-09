@@ -19,10 +19,10 @@ void capture()
     Camera cam1 = Camera();
     Camera cam2 = Camera();
     MultiCamera cams = MultiCamera();
-    cam1.setCaptureDefinition(std::string("0"));
-    cam2.setCaptureDefinition(std::string("0"));
-    // cam1.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
-    // cam2.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=1 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
+    // cam1.setCaptureDefinition(std::string("0"));
+    // cam2.setCaptureDefinition(std::string("0"));
+    cam1.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
+    cam2.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=1 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
     cams.addCamera(std::move(cam1));
     cams.addCamera(std::move(cam2));
 
@@ -63,26 +63,6 @@ void capture()
     }
 }
 
-// void display()
-// {
-//     while (run)
-//     {
-//         cv::Mat imgShow;
-//         {
-//             std::unique_lock<std::mutex> lock(imgMutex);
-//             imgAvail.wait(lock, []
-//                           { return !imgShared.empty(); });
-//             if (imgShared.empty())
-//             {
-//                 continue;
-//             }
-//             imgShow = imgShared.clone();
-//             imgShared.release();
-//         }
-//         cv::imshow("Camera Stream", imgShow);
-//     }
-// }
-
 int main()
 {
 
@@ -119,9 +99,21 @@ int main()
                 continue;
             }
             imgShow = imgShared.clone();
-            imgShared.release();
+            //imgShared.release();
+	if (imgShow.empty())
+	{
+	    std::cout << "Image is empty" << std::endl;
+            cv::Mat greenImg(640, 480, CV_8UC3, cv::Scalar(0, 255, 0));
+	    int key = cv::waitKey(30);
+	}
+	else
+	{
+	    std::cout << "Plotting Image" << std::endl;
+            cv::Mat greenImg(640, 480, CV_8UC3, cv::Scalar(0, 255, 0));
+	    int key = cv::waitKey(30);
+	    //cv::imshow("Camera Stream", imgShow);
+	}
         }
-        cv::imshow("Camera Stream", imgShow);
     }
 
     // Clean Up

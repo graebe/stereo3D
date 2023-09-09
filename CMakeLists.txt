@@ -46,10 +46,12 @@ find_package(Curses REQUIRED)
 # Executables
 add_executable(calibration.bin src/main.cpp src/calibration.cpp src/camera.cpp)
 add_executable(showImg.bin src/showImg_main.cpp src/showImg.cpp)
+add_executable(imshow.bin src/test.cpp src/camera.cpp)
 
 # Link libraries
 target_link_libraries(showImg.bin ${OpenCV_LIBS})
 target_link_libraries(calibration.bin ${OpenCV_LIBS} Threads::Threads ${CURSES_LIBRARIES})
+target_link_libraries(imshow.bin ${OpenCV_LIBS} Threads::Threads ${CURSES_LIBRARIES})
 
 # Testing
 add_executable(runTests.bin tests/main_tests.cpp tests/camera_test.cpp tests/showImg_test.cpp src/showImg.cpp src/camera.cpp)

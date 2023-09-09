@@ -78,6 +78,9 @@ public:
     MultiCamera(std::vector<Camera> cams);
     // Methods
     void addCamera(Camera &&cam);
-    void startCapture();
+    int size();
+    void startCapture(int warmUpFrames);
     void capture();
+    void releaseCapture();
+    void saveImages(std::string filename);
 };

@@ -146,6 +146,51 @@ void MultiCamera::addCamera(Camera &&cam)
     _cams.emplace_back(std::move(cam));
 };
 
-void MultiCamera::startCapture(){};
+int MultiCamera::size()
+{
+    return _cams.size();
+}
 
-void MultiCamera::capture(){};
+void MultiCamera::startCapture(int warmUpFrames)
+{
+    for (Camera &_cam : _cams)
+    {
+        _cam.startCapture(warmUpFrames);
+    }
+};
+
+void MultiCamera::capture()
+{
+    for (Camera &_cam : _cams)
+    {
+        _cam.capture();
+    }
+};
+
+void MultiCamera::releaseCapture()
+{
+    for (Camera &_cam : _cams)
+    {
+        _cam.releaseCapture();
+    }
+};
+
+void MultiCamera::saveImages(std::string filename)
+{
+    size_t idxDot = filename.find_last_of('.');
+    for (int i = 0; i < size(); i++)
+    {
+        std::string currFilename;
+        if (!(idxDot == std::string::npos))
+        {
+            std::string base = filename.substr(0, idxDot);
+            std::string extension = filename.substr(idxDot);
+            currFilename = base + std::to_string(i) + extension;
+        }
+        else
+        {
+            currFilename = filename + std::to_string(i);
+        }
+        _cams[i].saveImage(currFilename);
+    }
+}

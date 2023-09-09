@@ -30,13 +30,25 @@ int main()
     std::cout << "\nInitializing Caputre" << std::endl;
     cam1.startCapture(5);
     cam1.capture();
+    // cam1.releaseCapture();
+    cam1.saveImage("cap1.jpg");
+    cv::Mat img1 = cam1.getImage();
+
+    // Camera 2
     Camera cam2 = Camera();
-    cv::Mat img = cam1.getImage();
-    cam1.saveImage("caap1.jpg");
+    cam2.startCapture(5);
+    cam2.capture();
+    cam2.saveImage("cap2.jpg");
+    cv::Mat img2 = cam2.getImage();
 
     // Multi Cameras
     MultiCamera cams = MultiCamera();
     cams.addCamera(std::move(cam1));
-    cams.addCamera(std::move(cam2));
+    // cams.addCamera(std::move(cam2));
+    cams.startCapture(3);
+    cams.capture();
+    cams.releaseCapture();
+    cams.saveImages("captmulti.jpg");
+
     return 0;
 }

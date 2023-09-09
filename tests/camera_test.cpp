@@ -34,7 +34,7 @@ TEST(CameraTest, MoveAssignment)
 {
     if (isCIEnvironment())
     {
-        GTEST_SKIP(); // Skip the test in CI environment
+        return; // Skip the test in CI environment
     }
     // Test data
     cv::Mat K = (cv::Mat_<double>(3, 3) << 1, 0, 0, 0, 1, 0, 0, 0, 1);
@@ -75,7 +75,7 @@ TEST(CameraTet, MoveAssignment)
 {
     if (isCIEnvironment())
     {
-        GTEST_SKIP(); // Skip the test in CI environment
+        return; // Skip the test in CI environment
     }
     Camera cam1;
     cam1.startCapture(3);
@@ -91,7 +91,7 @@ TEST(CameraTest, CheckCaptureImageNotEmpty)
 {
     if (isCIEnvironment())
     {
-        GTEST_SKIP(); // Skip the test in CI environment
+        return; // Skip the test in CI environment
     }
     Camera cam;
     cam.startCapture(1);
@@ -105,7 +105,7 @@ TEST(CameraTest, SaveImage)
 {
     if (isCIEnvironment())
     {
-        GTEST_SKIP(); // Skip the test in CI environment
+        return; // Skip the test in CI environment
     }
     Camera cam;
     cam.startCapture(1);

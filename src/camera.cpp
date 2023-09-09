@@ -9,6 +9,7 @@ CameraInterface::~CameraInterface(){};
 void CameraInterface::moveProperties_(CameraInterface &source)
 {
     this->capt_ = std::move(source.capt_);
+    this->captDef_ = std::move(source.captDef_);
     this->img = std::move(source.img);
     this->isCapturing_ = std::move(source.isCapturing_);
 }
@@ -66,10 +67,17 @@ Camera &Camera::operator=(Camera &&source) noexcept
 Camera::~Camera() { Camera::releaseCapture(); };
 
 // Methods
+void Camera::setCaptureDefinition(std::string definition) {
+    captDef_ = definition;
+}
 int Camera::startCapture(int warmUpFrames)
 {
     cv::Mat imgTmp;
-    capt_ = cv::VideoCapture(0); //("nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink", cv::CAP_GSTREAMER);
+    if (captDef_ == "0") {
+	capt_ = cv::VideoCapture(0);
+    } else {
+        capt_ = cv::VideoCapture(captDef_);
+    }
     if (!capt_.isOpened())
     {
         std::cerr << "Error: Failed to open the camera. Ensure the device is connected and permissions are set." << std::endl;

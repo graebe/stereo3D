@@ -9,6 +9,7 @@ private:
 protected:
     std::unique_ptr<cv::Mat> img;
     cv::VideoCapture capt_;
+    std::string captDef_{"0"};
     bool isCapturing_{false};
 
 public:
@@ -23,6 +24,7 @@ public:
     // Destructor
     ~CameraInterface();
     //  Methods
+    virtual void setCaptureDefinition(std::string definition) = 0;
     virtual int startCapture(int warmUpFrames) = 0;
     virtual int capture() = 0;
     virtual cv::Mat getImage() = 0;
@@ -60,6 +62,7 @@ public:
     Imager imager;
     float calibrationError;
     // Methods
+    void setCaptureDefinition(std::string definition) override;
     int startCapture(int warmUpFrames) override;
     int capture() override;
     cv::Mat getImage() override;

@@ -27,27 +27,35 @@ int main()
               << cam1.D << std::endl;
     std::cout << "success." << std::endl;
 
-    std::cout << "\nInitializing Caputre" << std::endl;
+    // Camera 1
+    std::cout << "\nInitializing Caputre Camera 1" << std::endl;
+    cam1.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
     cam1.startCapture(5);
     cam1.capture();
-    // cam1.releaseCapture();
+    cam1.releaseCapture();
     cam1.saveImage("cap1.jpg");
     cv::Mat img1 = cam1.getImage();
 
     // Camera 2
+    std::cout << "\nInitializing Caputre Camera 2" << std::endl;
     Camera cam2 = Camera();
+    cam2.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=1 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
     cam2.startCapture(5);
     cam2.capture();
+    cam2.releaseCapture();
     cam2.saveImage("cap2.jpg");
     cv::Mat img2 = cam2.getImage();
 
     // Multi Cameras
     MultiCamera cams = MultiCamera();
     cams.addCamera(std::move(cam1));
-    // cams.addCamera(std::move(cam2));
-    cams.startCapture(3);
+    cams.addCamera(std::move(cam2));
+    std::cout << "Starting Multi Camera Capture ..." << std::endl;
+    cams.startCapture(5);
+    std::cout << "Capturing Multi Camera ..." << std::endl;
     cams.capture();
     cams.releaseCapture();
+    std::cout << "Saving Images ..." << std::endl;
     cams.saveImages("captmulti.jpg");
 
     return 0;

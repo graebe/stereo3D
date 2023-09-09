@@ -84,6 +84,7 @@ public:
     int size();
     void startCapture(int warmUpFrames);
     void capture();
+    cv::Mat getImage(int i_camera);
     void releaseCapture();
     void saveImages(std::string filename);
 };

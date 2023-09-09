@@ -67,15 +67,20 @@ Camera &Camera::operator=(Camera &&source) noexcept
 Camera::~Camera() { Camera::releaseCapture(); };
 
 // Methods
-void Camera::setCaptureDefinition(std::string definition) {
+void Camera::setCaptureDefinition(std::string definition)
+{
     captDef_ = definition;
 }
+
 int Camera::startCapture(int warmUpFrames)
 {
     cv::Mat imgTmp;
-    if (captDef_ == "0") {
-	capt_ = cv::VideoCapture(0);
-    } else {
+    if (captDef_ == "0")
+    {
+        capt_ = cv::VideoCapture(0);
+    }
+    else
+    {
         capt_ = cv::VideoCapture(captDef_);
     }
     if (!capt_.isOpened())
@@ -173,6 +178,11 @@ void MultiCamera::capture()
     {
         _cam.capture();
     }
+};
+
+cv::Mat MultiCamera::getImage(int i_camera)
+{
+    return _cams[i_camera].getImage();
 };
 
 void MultiCamera::releaseCapture()

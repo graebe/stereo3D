@@ -27,7 +27,7 @@ public:
     virtual void setCaptureDefinition(std::string definition) = 0;
     virtual int startCapture(int warmUpFrames) = 0;
     virtual int capture() = 0;
-    virtual cv::Mat getImage() = 0;
+    virtual cv::Mat getImage() const = 0;
     virtual void saveImage(std::string filename) = 0;
     virtual void releaseCapture() = 0;
 };
@@ -65,7 +65,7 @@ public:
     void setCaptureDefinition(std::string definition) override;
     int startCapture(int warmUpFrames) override;
     int capture() override;
-    cv::Mat getImage() override;
+    cv::Mat getImage() const override;
     void saveImage(std::string filename) override;
     void releaseCapture() override;
 };
@@ -84,7 +84,7 @@ public:
     int size();
     void startCapture(int warmUpFrames);
     void capture();
-    cv::Mat getImage(int i_camera);
+    cv::Mat getImage(int i_camera) const;
     void releaseCapture();
     void saveImages(std::string filename);
 };

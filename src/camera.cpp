@@ -100,7 +100,6 @@ int Camera::startCapture(int warmUpFrames)
             return -2;
         }
     }
-    img = std::make_unique<cv::Mat>(std::move(imgTmp));
     return 0;
 };
 
@@ -118,7 +117,7 @@ int Camera::capture()
     return 0;
 };
 
-cv::Mat Camera::getImage()
+cv::Mat Camera::getImage () const
 {
     if (img)
     {
@@ -180,7 +179,7 @@ void MultiCamera::capture()
     }
 };
 
-cv::Mat MultiCamera::getImage(int i_camera)
+cv::Mat MultiCamera::getImage(int i_camera) const
 {
     return _cams[i_camera].getImage();
 };

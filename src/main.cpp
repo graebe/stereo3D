@@ -1,116 +1,75 @@
 #include "camera.hpp"
 #include "calibration.hpp"
-#include <opencv2/opencv.hpp>
+#include <cstring>
 #include <chrono>
-#include <thread>
-#include <condition_variable>
-#include <mutex>
-#include <atomic>
 
-std::atomic<bool> run(true);
-std::mutex imgMutex;
-std::condition_variable imgAvail;
-
-void capture()
+int main(int argc, char** argv)
 {
+    // Read Arguments 
+    std::string captureDef0 = "0";
+    std::string captureDef1 = "0";
+    for (int i = 1; i<argc; i++) {
+	if(strcmp(argv[i],"--cam=0") == 0) {
+            captureDef0 = "0";	
+            captureDef1 = "0";	
+	}
+	if(strcmp(argv[i],"--cam=jetson") == 0) {
+            captureDef0 = "nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
+	    captureDef1 = "nvarguscamerasrc sensor-id=1 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
+	}
+    }
+
     // Create Cameras
     Camera cam1 = Camera();
     Camera cam2 = Camera();
+    cam1.setCaptureDefinition(captureDef0);
+    cam2.setCaptureDefinition(captureDef1);
+    
     MultiCamera cams = MultiCamera();
-    // cam1.setCaptureDefinition(std::string("0"));
-    // cam2.setCaptureDefinition(std::string("0"));
-    cam1.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
-    cam2.setCaptureDefinition(std::string("nvarguscamerasrc sensor-id=1 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"));
     cams.addCamera(std::move(cam1));
     cams.addCamera(std::move(cam2));
 
     // Start Capture
-    cams.startCapture(5);
+    cams.startCapture(1);
 
-    // Main Loop
-    int ch;
+    cv::Mat imgShared;
     int i = 0;
+    bool run = true;  // Using a regular boolean instead of atomic<bool>
+
     while (run)
     {
         i++;
-	std::this_thread::sleep_for(std::chrono::seconds(3));
-	ch = ' ';
-        if (ch == ' ')
-        {
-            std::cout << "Capturing Frame." << std::endl;
-            cams.capture();
-            {
-                std::lock_guard<std::mutex> lock(imgMutex);
-		imgShared.release();
-                imgShared = cams.getImage(0);
-                imgAvail.notify_one();
-            }
-            cams.saveImages("calibration_img_" + std::to_string(i) + "_.jpg");
-        }
-        if (ch == 'q')
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+
+        std::cout << "Capturing Frame." << std::endl;
+        cams.capture();
+
+        imgShared.release();
+        imgShared = cams.getImage(0);
+
+        cams.saveImages("calibration_img_" + std::to_string(i) + "_.jpg");
+
+        // Listen to key
+        int key = cv::waitKey(30);
+        if (key == 'q')
         {
             std::cout << "Quitting" << std::endl;
             run = false;
-            imgAvail.notify_all();
+            continue;
+        }
+
+        // Plot Image if Available
+        if (imgShared.empty())
+        {
+            std::cout << "Image is empty" << std::endl;
+        }
+        else
+        {
+            std::cout << "Plotting Image" << std::endl;
+            cv::imshow("Camera Stream", imgShared);
         }
     }
-}
 
-int main()
-{
-
-    // Create Calibrator
-    // CalibrationBoard B = CalibrationBoard(9, 6, 25.0);
-    // Calibrator C = Calibrator(B);
-
-    // List of Calibration Files
-    // std::vector<std::string> calibrationImages = {"img_test_01.jpg", "img_test_02.jpg", "img_test_03.jpg"};
-
-    // Calibrate
-    // C.addCalibrationImages(calibrationImages);
-    // C.checkerboardCalibration(cam1);
-
-    // Output the results
-    // C.printSummary();
-    // std::cout << "Camera Matrix: \n"
-    //           << cam1.K << std::endl;
-    // std::cout << "Distortion Coefficients: \n"
-    //           << cam1.D << std::endl;
-    // std::cout << "success." << std::endl;
-
-    std::thread captureThread(capture);
-
-    cv::Mat imgShared;
-
-    while (run)
-    {
-        {
-	    // Wait for Lock
-            std::unique_lock<std::mutex> lock(imgMutex);
-            imgAvail.wait(lock, [imgShared]
-                          { return !imgShared.empty(); });
-
-	    // Listen to key
-            int key = cv::waitKey(30);
-	    
-	    // Plot Image if Available
-            if (imgShared.empty())
-            {
-	        std::cout << "Image is empty" << std::endl;
-	        cv::Mat greenImg(640, 480, CV_8UC3, cv::Scalar(0, 255, 0));
-                continue;
-            }
-	    else
-	    {
-	        std::cout << "Plotting Image" << std::endl;
-	        //cv::Mat greenImg(640, 480, CV_8UC3, cv::Scalar(0, 255, 0));
-	        //std::cout << "Image data is: " << *imgShow.ptr<uchar>(0);
-	        cv::imshow("Camera Stream", imgShared);
-	    }
-	}
-    }
-
-    // Clean Up
-    captureThread.join();
     return 0;
 }
+

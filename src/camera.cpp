@@ -158,6 +158,10 @@ void MultiCamera::addCamera(Camera &&cam)
     _cams.emplace_back(std::move(cam));
 };
 
+Camera* MultiCamera::getCamera(int i_camera) {
+    return &_cams[i_camera];
+}
+
 int MultiCamera::size()
 {
     return _cams.size();

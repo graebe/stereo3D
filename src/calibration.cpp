@@ -24,10 +24,12 @@ cv::Mat loadColorImage(std::string path)
     return image;
 }
 
-void drawChessboardCorners(cv::Mat image, CalibrationBoard board, std::vector<cv::Point2f> corners, bool pattern_found, std::string filename)
+void Calibrator::drawChessboardCorners(cv::Mat image)
 {
-    cv::drawChessboardCorners(image, board.boardSize, corners, pattern_found);
-    cv::imwrite(filename, image);
+    auto calpoints = calsets_.object_point_set.back();
+    auto pattern_found = pattern_found_.back();
+    auto boardSize = board_.boardSize;
+    cv::drawChessboardCorners(image, boardSize, calpoints, pattern_found);
 }
 
 bool Calibrator::findChessboardCorners_(CalibrationPoints &calpoints, cv::Mat &image)
@@ -72,6 +74,11 @@ bool Calibrator::addCalibrationImage_(cv::Mat image)
     return false;
 }
 
+void Calibrator::addCalibrationImages(cv::Mat image) {
+    bool result = addCalibrationImage_(image);
+    pattern_found_.emplace_back(result);
+}
+
 void Calibrator::addCalibrationImages(std::vector<std::string> files)
 {
     for (std::string file : files)
@@ -104,7 +111,23 @@ void Calibrator::addCalibrationImages(std::vector<cv::Mat> images)
     }
 }
 
+int Calibrator::size() { return calfiles_.size(); }
+
 // Calibrator
+bool Calibrator::checkerboardCalibration(Camera *C)
+{
+    // Check number of images
+    if (calfiles_.size() < 2)
+    {
+        std::cout << "Need a minimum of two images for calibration, currently it is: " << calfiles_.size() << std::endl;
+        return false;
+    }
+    // Calibrate
+    std::vector<cv::Mat> rvecs, tvecs;
+    C->calibrationError = cv::calibrateCamera(calsets_.object_point_set, calsets_.image_point_set, C->imager.psize, C->K, C->D, rvecs, tvecs);
+    return true;
+    
+}
 bool Calibrator::checkerboardCalibration(Camera &C)
 {
     // Check number of images

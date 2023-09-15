@@ -34,10 +34,14 @@ public:
     Calibrator();
     Calibrator(CalibrationBoard board);
     bool checkerboardCalibration(Camera &C);
+    bool checkerboardCalibration(Camera *C);
     bool checkerboardCalibration(std::vector<std::string> files, Camera &C);
+    void addCalibrationImages(cv::Mat image);
     void addCalibrationImages(std::vector<std::string> files);
     void addCalibrationImages(std::vector<cv::Mat> images);
+    void drawChessboardCorners(cv::Mat image);
     void printSummary();
+    int size();
 
 private:
     CalibrationBoard board_;

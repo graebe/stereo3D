@@ -55,10 +55,10 @@ public:
     // Destructor
     ~Camera();
     // Properties
-    cv::Mat K;
-    cv::Mat D;
-    cv::Mat R;
-    cv::Mat t;
+    cv::Mat K{cv::Mat()};
+    cv::Mat D{cv::Mat()};
+    cv::Mat R{cv::Mat()};
+    cv::Mat t{cv::Mat()};
     Imager imager;
     float calibrationError;
     // Methods
@@ -81,6 +81,7 @@ public:
     MultiCamera(std::vector<Camera> cams);
     // Methods
     void addCamera(Camera &&cam);
+    Camera* getCamera(int i_camera);
     int size();
     void startCapture(int warmUpFrames);
     void capture();

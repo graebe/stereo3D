@@ -35,7 +35,6 @@ void capture(std::reference_wrapper<cv::Mat> imgSharedWrapper)
     while (run)
     {
         i++;
-	std::this_thread::sleep_for(std::chrono::seconds(1));
 	ch = ' ';
         if (ch == ' ')
         {
@@ -81,12 +80,6 @@ int main()
     // std::cout << "success." << std::endl;
     
     
-    std::cout << "Plotting Green Image...";
-    cv::Mat greenImg(640, 480, CV_8UC3, cv::Scalar(0, 255, 0));
-    cv::imshow("Camera Stream", greenImg);
-    std::this_thread::sleep_for(std::chrono::seconds(5)); 
-
-
     std::cout << "Starting to Capture...";
     cv::Mat imgShared;
     std::thread captureThread(capture, std::ref(imgShared));
@@ -98,9 +91,6 @@ int main()
             std::unique_lock<std::mutex> lock(imgMutex);
             imgAvail.wait(lock, [&imgShared]
                           { return !imgShared.empty(); });
-
-	    // Listen to key
-	    std::this_thread::sleep_for(std::chrono::seconds(1)); 
 
 	    // Plot Image if Available
             if (imgShared.empty())

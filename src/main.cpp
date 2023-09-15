@@ -2,6 +2,7 @@
 #include "calibration.hpp"
 #include <cstring>
 #include <chrono>
+#include <ctime>
 
 int main(int argc, char** argv)
 {
@@ -19,6 +20,10 @@ int main(int argc, char** argv)
 	}
     }
 
+    // Create Calibrator
+    CalibrationBoard B = CalibrationBoard(9, 6, 25.0);
+    Calibrator C = Calibrator(B);
+
     // Create Cameras
     Camera cam1 = Camera();
     Camera cam2 = Camera();
@@ -32,41 +37,60 @@ int main(int argc, char** argv)
     // Start Capture
     cams.startCapture(1);
 
-    cv::Mat imgShared;
+    // Preparation
     int i = 0;
-    bool run = true;  // Using a regular boolean instead of atomic<bool>
+    clock_t lastCapture{clock()};
+    bool run = true;
 
+    // Run Capture Loop
     while (run)
     {
-        i++;
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-
-        std::cout << "Capturing Frame." << std::endl;
+        // Capture Frame
         cams.capture();
 
-        imgShared.release();
-        imgShared = cams.getImage(0);
 
-        cams.saveImages("calibration_img_" + std::to_string(i) + "_.jpg");
-
-        // Listen to key
-        int key = cv::waitKey(30);
+        // Save Frame if Space pressed, Quit with q 
+        int key = cv::waitKey(5);
         if (key == 'q')
         {
             std::cout << "Quitting" << std::endl;
             run = false;
             continue;
         }
+	if (key == ' ' && static_cast<double>(clock() - lastCapture) / CLOCKS_PER_SEC > 1.0) {
+
+	    // Capture Frame
+	    std::cout << "Caputring Frame" << std::endl;
+            cams.saveImages("img_" + std::to_string(i) + "_.jpg");
+	    i++;
+	    lastCapture = clock();
+
+	    // Calibrate
+	    C.addCalibrationImages(cams.getImage(0));
+	    std::cout << "Number of Calibration Frames: " << std::to_string(C.size()) << std::endl;
+	    std::cout << "Calibrating ..." << std::endl;
+	    C.checkerboardCalibration(cams.getCamera(0));
+
+	    // Output the results
+	    C.printSummary();
+	    std::cout << "Camera Matrix: \n"
+	              << cam1.K << std::endl;
+	    std::cout << "Distortion Coefficients: \n"
+	              << cam1.D << std::endl;
+
+	}
 
         // Plot Image if Available
-        if (imgShared.empty())
+        if (cams.getImage(0).empty() || cams.getImage(1).empty())
         {
             std::cout << "Image is empty" << std::endl;
         }
         else
         {
-            std::cout << "Plotting Image" << std::endl;
-            cv::imshow("Camera Stream", imgShared);
+            cv::Mat img0 = cams.getImage(0);
+	    cv::Mat img1 = cams.getImage(1); 
+            cv::imshow("Camera Stream 0", img0);
+            cv::imshow("Camera Stream 1", img1);
         }
     }
 

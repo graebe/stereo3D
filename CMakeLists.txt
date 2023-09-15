@@ -50,8 +50,8 @@ add_executable(imshow.bin src/test.cpp src/camera.cpp)
 
 # Link libraries
 target_link_libraries(showImg.bin ${OpenCV_LIBS})
-target_link_libraries(calibration.bin ${OpenCV_LIBS} Threads::Threads ${CURSES_LIBRARIES})
-target_link_libraries(imshow.bin ${OpenCV_LIBS} Threads::Threads ${CURSES_LIBRARIES})
+target_link_libraries(calibration.bin ${OpenCV_LIBS} Threads::Threads)
+target_link_libraries(imshow.bin ${OpenCV_LIBS} Threads::Threads)
 
 # Testing
 add_executable(runTests.bin tests/main_tests.cpp tests/camera_test.cpp tests/showImg_test.cpp src/showImg.cpp src/camera.cpp)

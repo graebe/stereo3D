@@ -1,7 +1,6 @@
 #include "camera.hpp"
 #include "calibration.hpp"
 #include <opencv2/opencv.hpp>
-#include <ncurses.h>
 #include <chrono>
 #include <thread>
 #include <condition_variable>
@@ -9,7 +8,6 @@
 #include <atomic>
 
 std::atomic<bool> run(true);
-cv::Mat imgShared;
 std::mutex imgMutex;
 std::condition_variable imgAvail;
 
@@ -29,26 +27,21 @@ void capture()
     // Start Capture
     cams.startCapture(5);
 
-    // Initialize ncurses
-    initscr();
-    cbreak();
-    noecho();
-    keypad(stdscr, TRUE);
-    timeout(-1);
-
     // Main Loop
     int ch;
     int i = 0;
     while (run)
     {
         i++;
-        ch = getch();
+	std::this_thread::sleep_for(std::chrono::seconds(3));
+	ch = ' ';
         if (ch == ' ')
         {
             std::cout << "Capturing Frame." << std::endl;
             cams.capture();
             {
                 std::lock_guard<std::mutex> lock(imgMutex);
+		imgShared.release();
                 imgShared = cams.getImage(0);
                 imgAvail.notify_one();
             }
@@ -87,37 +80,37 @@ int main()
 
     std::thread captureThread(capture);
 
+    cv::Mat imgShared;
+
     while (run)
     {
-        cv::Mat imgShow;
         {
+	    // Wait for Lock
             std::unique_lock<std::mutex> lock(imgMutex);
-            imgAvail.wait(lock, []
+            imgAvail.wait(lock, [imgShared]
                           { return !imgShared.empty(); });
+
+	    // Listen to key
+            int key = cv::waitKey(30);
+	    
+	    // Plot Image if Available
             if (imgShared.empty())
             {
+	        std::cout << "Image is empty" << std::endl;
+	        cv::Mat greenImg(640, 480, CV_8UC3, cv::Scalar(0, 255, 0));
                 continue;
             }
-            imgShow = imgShared.clone();
-            //imgShared.release();
-	if (imgShow.empty())
-	{
-	    std::cout << "Image is empty" << std::endl;
-            cv::Mat greenImg(640, 480, CV_8UC3, cv::Scalar(0, 255, 0));
-	    int key = cv::waitKey(30);
+	    else
+	    {
+	        std::cout << "Plotting Image" << std::endl;
+	        //cv::Mat greenImg(640, 480, CV_8UC3, cv::Scalar(0, 255, 0));
+	        //std::cout << "Image data is: " << *imgShow.ptr<uchar>(0);
+	        cv::imshow("Camera Stream", imgShared);
+	    }
 	}
-	else
-	{
-	    std::cout << "Plotting Image" << std::endl;
-            cv::Mat greenImg(640, 480, CV_8UC3, cv::Scalar(0, 255, 0));
-	    int key = cv::waitKey(30);
-	    //cv::imshow("Camera Stream", imgShow);
-	}
-        }
     }
 
     // Clean Up
     captureThread.join();
-    endwin();
     return 0;
 }

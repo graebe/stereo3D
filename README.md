@@ -29,6 +29,11 @@ Execution (in the project folder) - On Jetson Nano
 ```
 (will show the camera stream of the IMX219-83)
 
+To show images with opencv on the screen, you can use
+```
+./build/imshow.bin ./img_test_01.jpg
+```
+
 # Hardware
 
 The project was implemented for the use of the following hardware:

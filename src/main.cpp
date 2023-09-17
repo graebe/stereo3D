@@ -4,20 +4,23 @@
 #include <chrono>
 #include <ctime>
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-    // Read Arguments 
+    // Read Arguments
     std::string captureDef0 = "0";
     std::string captureDef1 = "0";
-    for (int i = 1; i<argc; i++) {
-	if(strcmp(argv[i],"--cam=0") == 0) {
-            captureDef0 = "0";	
-            captureDef1 = "0";	
-	}
-	if(strcmp(argv[i],"--cam=jetson") == 0) {
+    for (int i = 1; i < argc; i++)
+    {
+        if (strcmp(argv[i], "--cam=0") == 0)
+        {
+            captureDef0 = "0";
+            captureDef1 = "0";
+        }
+        if (strcmp(argv[i], "--cam=jetson") == 0)
+        {
             captureDef0 = "nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
-	    captureDef1 = "nvarguscamerasrc sensor-id=1 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
-	}
+            captureDef1 = "nvarguscamerasrc sensor-id=1 ! video/x-raw(memory:NVMM), width=640, height=480, format=(string)NV12, framerate=(fraction)20/1 ! nvvidconv flip-method=0 ! video/x-raw, width=640, height=480, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
+        }
     }
 
     // Create Calibrator
@@ -29,7 +32,7 @@ int main(int argc, char** argv)
     Camera cam2 = Camera();
     cam1.setCaptureDefinition(captureDef0);
     cam2.setCaptureDefinition(captureDef1);
-    
+
     MultiCamera cams = MultiCamera();
     cams.addCamera(std::move(cam1));
     cams.addCamera(std::move(cam2));
@@ -48,8 +51,7 @@ int main(int argc, char** argv)
         // Capture Frame
         cams.capture();
 
-
-        // Save Frame if Space pressed, Quit with q 
+        // Save Frame if Space pressed, Quit with q
         int key = cv::waitKey(5);
         if (key == 'q')
         {
@@ -57,28 +59,28 @@ int main(int argc, char** argv)
             run = false;
             continue;
         }
-	if (key == ' ' && static_cast<double>(clock() - lastCapture) / CLOCKS_PER_SEC > 1.0) {
+        if (key == ' ' && static_cast<double>(clock() - lastCapture) / CLOCKS_PER_SEC > 1.0)
+        {
 
-	    // Capture Frame
-	    std::cout << "Caputring Frame" << std::endl;
+            // Capture Frame
+            std::cout << "Caputring Frame" << std::endl;
             cams.saveImages("img_" + std::to_string(i) + "_.jpg");
-	    i++;
-	    lastCapture = clock();
+            i++;
+            lastCapture = clock();
 
-	    // Calibrate
-	    C.addCalibrationImages(cams.getImage(0));
-	    std::cout << "Number of Calibration Frames: " << std::to_string(C.size()) << std::endl;
-	    std::cout << "Calibrating ..." << std::endl;
-	    C.checkerboardCalibration(cams.getCamera(0));
+            // Calibrate
+            C.addCalibrationImages(cams.getImage(0));
+            std::cout << "Number of Calibration Frames: " << std::to_string(C.size()) << std::endl;
+            std::cout << "Calibrating ..." << std::endl;
+            C.checkerboardCalibration(cams.getCamera(0));
 
-	    // Output the results
-	    C.printSummary();
-	    std::cout << "Camera Matrix: \n"
-	              << cam1.K << std::endl;
-	    std::cout << "Distortion Coefficients: \n"
-	              << cam1.D << std::endl;
-
-	}
+            // Output the results
+            C.printSummary();
+            std::cout << "Camera Matrix: \n"
+                      << cam1.K << std::endl;
+            std::cout << "Distortion Coefficients: \n"
+                      << cam1.D << std::endl;
+        }
 
         // Plot Image if Available
         if (cams.getImage(0).empty() || cams.getImage(1).empty())
@@ -88,7 +90,7 @@ int main(int argc, char** argv)
         else
         {
             cv::Mat img0 = cams.getImage(0);
-	    cv::Mat img1 = cams.getImage(1); 
+            cv::Mat img1 = cams.getImage(1);
             cv::imshow("Camera Stream 0", img0);
             cv::imshow("Camera Stream 1", img1);
         }
@@ -96,4 +98,3 @@ int main(int argc, char** argv)
 
     return 0;
 }
-

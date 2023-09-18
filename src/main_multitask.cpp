@@ -1,6 +1,5 @@
 #include "camera.hpp"
 #include "calibration.hpp"
-#include <opencv2/opencv.hpp>
 #include <thread>
 #include <condition_variable>
 #include <mutex>

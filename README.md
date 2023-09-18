@@ -80,7 +80,7 @@ Object Oriented Programming
 | Classes follow an appropriate inheritance hierarchy. | See interface definitions for Camera and MultiCamera. |
 | Overloaded functions allow the same function to operate on different parameters. | See e.g. void Calibrator::addCalibrationImages(...) |
 | Derived class functions override virtual base class functions. | See interface definitions for Camera and MultiCamera and their inheritance. |
-| Templates generalize functions in the project | NOT IMPLEMENTED. |
+| Templates generalize functions in the project | I have implemented an example, as proof of knowledge in image.cpp. |
 
 Memory Management
 | Success Criteria | Fulfillment |

@@ -117,7 +117,7 @@ int Camera::capture()
     return 0;
 };
 
-cv::Mat Camera::getImage () const
+cv::Mat Camera::getImage() const
 {
     if (img)
     {
@@ -158,7 +158,8 @@ void MultiCamera::addCamera(Camera &&cam)
     _cams.emplace_back(std::move(cam));
 };
 
-Camera* MultiCamera::getCamera(int i_camera) {
+Camera *MultiCamera::getCamera(int i_camera)
+{
     return &_cams[i_camera];
 }
 

@@ -11,19 +11,14 @@ std::atomic<bool> run(true);
 std::mutex imgMutex;
 std::condition_variable imgUpdated;
 
-void capture(const std::string &captureDef0, const std::string &captureDef1, std::reference_wrapper<cv::Mat> imgSharedWrapper0, std::reference_wrapper<cv::Mat> imgSharedWrapper1)
+void capture(const std::reference_wrapper<MultiCamera> camsSharedWrapper,
+             std::reference_wrapper<cv::Mat> imgSharedWrapper0,
+             std::reference_wrapper<cv::Mat> imgSharedWrapper1)
 {
+
+    MultiCamera &cams = camsSharedWrapper.get();
     cv::Mat &imgShared0 = imgSharedWrapper0.get();
     cv::Mat &imgShared1 = imgSharedWrapper1.get();
-
-    Camera cam1;
-    Camera cam2;
-    cam1.setCaptureDefinition(captureDef0);
-    cam2.setCaptureDefinition(captureDef1);
-
-    MultiCamera cams;
-    cams.addCamera(std::move(cam1));
-    cams.addCamera(std::move(cam2));
 
     cams.startCapture(1);
 
@@ -38,7 +33,6 @@ void capture(const std::string &captureDef0, const std::string &captureDef1, std
         }
 
         imgUpdated.notify_one();
-        std::this_thread::sleep_for(std::chrono::milliseconds(30)); // Optional delay for ~30fps
     }
 }
 
@@ -61,12 +55,21 @@ int main(int argc, char *argv[])
         }
     }
 
+    Camera cam1;
+    Camera cam2;
+    cam1.setCaptureDefinition(captureDef0);
+    cam2.setCaptureDefinition(captureDef1);
+
+    MultiCamera cams;
+    cams.addCamera(std::move(cam1));
+    cams.addCamera(std::move(cam2));
+
     CalibrationBoard B(9, 6, 25.0);
     Calibrator C(B);
 
     cv::Mat imgShared0;
     cv::Mat imgShared1;
-    std::thread captureThread(capture, captureDef0, captureDef1, std::ref(imgShared0), std::ref(imgShared1));
+    std::thread captureThread(capture, std::ref(cams), std::ref(imgShared0), std::ref(imgShared1));
 
     int i = 0;
     clock_t lastCapture{clock()};
@@ -119,4 +122,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-BROKEN, FIX !!

@@ -95,4 +95,4 @@ Concurrency
 | The project uses multithreading. | See Calibrator::addCalibrationImages(std::vector\<std::string\> files). |
 | A promise and future is used in the project. | See Calibrator::addCalibrationImages(std::vector\<std::string\> files). |
 | A mutex or lock is used in the project. | See Calibrator. |
-| A condition variable is used in the project. | NOT IMPLEMENTED. |
+| A condition variable is used in the project. | See implementation of main_multitask.cpp. |

@@ -13,6 +13,7 @@ sudo apt-get update
 cd /usr/src/gtest
 sudo cmake CMakeLists.txt
 sudo make
+sudo cp *.a /usr/lib
 ```
 
 Install Prerequisite 2 - ncurses

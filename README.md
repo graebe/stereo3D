@@ -92,6 +92,8 @@ Memory Management
 | The project uses smart pointers instead of raw pointers. | See int Camera::capture() and Camera properties. The camera object owns the captured image. |
 
 Concurrency
+| Success Criteria | Fulfillment |
+|------------------|-------------|
 | The project uses multithreading. | See Calibrator::addCalibrationImages(std::vector\<std::string\> files). |
 | A promise and future is used in the project. | See Calibrator::addCalibrationImages(std::vector\<std::string\> files). |
 | A mutex or lock is used in the project. | See Calibrator. |

@@ -9,6 +9,6 @@ cd /home/workspace/stereo3d
 
 # Install Dependencies
 sudo apt-get update
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-sudo apt-get install libncurses-dev
-sudo apt-get install g++-9
+sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+sudo apt-get install -y libncurses-dev
+sudo apt-get install -y g++-9

@@ -7,6 +7,20 @@ Click [Test Coverage Report](https://graebe.github.io/stereo3d/) to access the t
 
 ## Compilation & Execution of the project
 
+Install Prerequisite 1 - GTest
+```
+sudo apt-get update
+cd /usr/src/gtest
+sudo cmake CMakeLists.txt
+sudo make
+```
+
+Install Prerequisite 2 - 
+```
+sudo apt-get update
+sudo apt-get install libncurses-dev
+```
+
 Compilation (in the project folder)
 ```
 mkdir ./build

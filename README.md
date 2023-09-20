@@ -15,7 +15,7 @@ sudo cmake CMakeLists.txt
 sudo make
 ```
 
-Install Prerequisite 2 - 
+Install Prerequisite 2 - ncurses
 ```
 sudo apt-get update
 sudo apt-get install libncurses-dev
